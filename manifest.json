@@ -1,11 +1,14 @@
 {
-	"id": "sample-plugin",
-	"name": "Sample Plugin",
-	"version": "1.0.0",
+	"id": "meld-11ty",
+	"name": "Meld Static",
+	"version": "0.0.1",
 	"minAppVersion": "0.15.0",
 	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
-	"isDesktopOnly": false
+	"author": "meld-cp",
+	"authorUrl": "https://github.com/meld-cp/obsidian-11ty",
+	"fundingUrl": {
+		"Buy Me a Coffee": "https://www.buymeacoffee.com/cleon",
+		"GitHub Sponsor": "https://github.com/sponsors/meld-cp"
+	},
+	"isDesktopOnly": true
 }
