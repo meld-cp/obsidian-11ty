@@ -2,8 +2,11 @@ import { exec } from 'child_process';
 import { App, FileSystemAdapter, Notice, Plugin, PluginManifest, PluginSettingTab, TFolder, normalizePath } from 'obsidian';
 import * as path from 'path';
 
+// TODO: instruct user to install eleventy `> npm install -g @11ty/eleventy`
+// TODO: add option to enable/disable watch mode
 
 // TODO: add settings to configure eleventy.config.js (https://www.11ty.dev/docs/config/)
+
 interface Meld11tyPluginSettings {
 	//mySetting: string;
 }
@@ -76,7 +79,7 @@ export default class Meld11tyPlugin extends Plugin {
 		
 		new Notice( `Building Site: '${folder.path}'...` );
 
-		exec( 'npx @11ty/eleventy', { cwd: fullFolderPath }, (err, stdout, stderr) => {
+		exec( 'eleventy', { cwd: fullFolderPath }, (err, stdout, stderr) => {
 			if (err) {
 			  console.error(err);
 			  new Notice( `There was an error while building: '${folder.path}', see console` );
