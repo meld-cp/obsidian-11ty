@@ -1,5 +1,5 @@
 import { exec } from 'child_process';
-import { App, FileSystemAdapter, Notice, Plugin, PluginManifest, PluginSettingTab, TFolder, normalizePath } from 'obsidian';
+import { App, FileSystemAdapter, Notice, Plugin, PluginManifest, PluginSettingTab, TFile, TFolder, normalizePath } from 'obsidian';
 import * as path from 'path';
 
 // TODO: instruct user to install eleventy `> npm install -g @11ty/eleventy`
@@ -29,23 +29,18 @@ export default class Meld11tyPlugin extends Plugin {
 		this.addSettingTab(new Meld11tySettingTab(this.app, this));
 
 		this.registerEvent( this.app.workspace.on( 'file-menu', async (menu, folder, source) => {
+			
 			if (!(folder instanceof TFolder)){
 				return;
 			}
-
-			// check for 11ty config file
-			const configFilePath = normalizePath( path.join(folder.path, 'eleventy.config.js') );
-
-			//console.debug({configFilePath});
 			
 			menu.addItem(async (item) => {
-				const configFileExists = await this.app.vault.adapter.exists( configFilePath );
+				//walk up parent folders looking for the config file
+				const configFile = await this.getConfigFilePathRecursive( folder );
 
-				//const menuItemLabel = configFileExists ? 'Build Static Site' : 'Init Static Site';
-
-				if ( configFileExists ){
+				if ( configFile != null ){
 					item
-						.setTitle('Build Static Site').onClick(async () => await this.buildStaticSite(folder) )
+						.setTitle('Build Static Site').onClick(async () => await this.buildStaticSite(configFile) )
 					;
 				}else{
 					item
@@ -59,34 +54,58 @@ export default class Meld11tyPlugin extends Plugin {
 
 	}
 
-	initStaticSite(folder: TFolder): any {
-		// TODO: build eleventy.config.js
+	async getConfigFilePathRecursive( startingFolder: TFolder ): Promise<TFile | null> {
+		// check for 11ty config file
+		const configFilePath = normalizePath( path.join(startingFolder.path, 'eleventy.config.js') );
+		//console.debug( {configFilePath} );
+		const configFileExists = await this.app.vault.adapter.exists( configFilePath );
+
+		if ( configFileExists ){
+			return this.app.vault.getAbstractFileByPath(configFilePath) as TFile;
+		}
+
+		if ( startingFolder.parent ){
+			return await this.getConfigFilePathRecursive(startingFolder.parent);
+		}
+
+		return null;
 	}
 
-	async buildStaticSite(folder: TFolder) : Promise<void> {
+	initStaticSite(folder: TFolder): any {
+		// TODO: build eleventy.config.js
+		console.debug( `initStaticSite: ${folder.path}` );
+	}
+
+	async buildStaticSite(configFile: TFile) : Promise<void> {
 		
 		if ( !(this.app.vault.adapter instanceof FileSystemAdapter) ) {
 			return;
 		}
+
+		if (configFile.parent == null){
+			return;
+		}
 		
+		const srcRootFolder = configFile.parent;
+
 		const basePath = this.app.vault.adapter.getBasePath();
-		const fullFolderPath = path.join( basePath, folder.path );
+		const fullFolderPath = path.join( basePath, srcRootFolder.path );
 
 		//console.debug( {basePath, fullFolderPath} );
 		
 
 		// run eleventy to build the static site
 		
-		new Notice( `Building Site: '${folder.path}'...` );
+		new Notice( `Building Site: '${srcRootFolder.path}'...` );
 
 		exec( 'eleventy', { cwd: fullFolderPath }, (err, stdout, stderr) => {
 			if (err) {
 			  console.error(err);
-			  new Notice( `There was an error while building: '${folder.path}', see console` );
+			  new Notice( `There was an error while building: '${srcRootFolder.path}', see console` );
 			  return;
 			}
 			console.log(stdout);
-			new Notice( `Site: '${folder.path}' was built` );
+			new Notice( `Site: '${srcRootFolder.path}' was built` );
 		  });
 	}
 
