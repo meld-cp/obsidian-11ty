@@ -98,7 +98,7 @@ export default class Meld11tyPlugin extends Plugin {
 		
 		new Notice( `Building Site: '${srcRootFolder.path}'...` );
 
-		exec( 'eleventy', { cwd: fullFolderPath }, (err, stdout, stderr) => {
+		exec( `eleventy --config="eleventy.config.js"`, { cwd: fullFolderPath }, (err, stdout, stderr) => {
 			if (err) {
 			  console.error(err);
 			  new Notice( `There was an error while building: '${srcRootFolder.path}', see console` );

@@ -1,18 +1,16 @@
-const { isDate } = require("util/types");
-
-export default function(eleventyConfig) {
-//module.exports = function(eleventyConfig) {
+module.exports = function(eleventyConfig) {
     // Shortcodes added in this way are available in:
     // * Markdown
     // * Liquid
     // * Nunjucks
     // * Handlebars (not async)
     // * JavaScript
+    eleventyConfig.addShortcode("user", function(firstName, lastName) {
+       return `${firstName} ${lastName}` 
+    });
     
     eleventyConfig.setTemplateFormats([
 		"md",
-        "html",
-        "njk",
 		"css",
         "png",
         "jpg",
@@ -31,41 +29,20 @@ const ObsidianConverterExtension = {
 
         return async function (data) {
             
-            //console.debug('ObsidianConverterExtension', data);
-
-            data = TreatFrontmatterTimesAsLocal(data);
-            
-            let content = await this.defaultRenderer(data);
-
-            const post_processors = [
+            const processors = [
                 ObsidianEmbededInternalImages,
                 //ObsidianExternalImages
                 ImageWithAltSize
             ]
 
-            post_processors.forEach(p => {
+            let content = await this.defaultRenderer(data);
+            processors.forEach(p => {
                 content = p(content);
             });
 
             return content;
         };
     },
-}
-
-const TreatFrontmatterTimesAsLocal = function (data) {
-    // convert any frontmatter date times without a timezone to local timezone
-    //console.debug('LocalTimezoneFrontmatterDates', {data});
-
-    Object.entries(data).forEach(([key, value]) => {
-        if ( isDate(value) ){
-            const tzdiff = value.getTimezoneOffset();
-            const newDate = new Date(value.getTime() + tzdiff*60000);
-            //console.debug('LocalTimezoneFrontmatterDates', {key, value, tzdiff, newDate});
-            data[key] = newDate;
-        }
-    })
-
-    return data;
 }
 
 const ObsidianEmbededInternalImages = function (content) {
