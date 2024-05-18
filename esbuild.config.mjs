@@ -37,7 +37,7 @@ const context = await esbuild.context({
 	logLevel: "info",
 	sourcemap: prod ? false : "inline",
 	treeShaking: true,
-	outfile: "test-vault/.obsidian/plugins/meld-11ty/main.js",
+	outfile: "11ty - test-vault/.obsidian/plugins/meld-11ty/main.js",
 });
 
 if (prod) {
